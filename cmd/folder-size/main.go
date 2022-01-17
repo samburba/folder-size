@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 	"sort"
 )
 
@@ -40,6 +41,7 @@ func GetFolderSize(directory string, size int64) int64 {
 
 func main() {
 	directoryPtr := flag.String("dir", ".", "the directory to view")
+	visualizationPtr := flag.Bool("v", false, "visualization")
 	flag.Parse()
 	fmt.Println(*directoryPtr)
 	files, err := ioutil.ReadDir(*directoryPtr)
@@ -66,8 +68,21 @@ func main() {
 	sort.Slice(names, func(i, j int) bool { 
 		return folders[names[i]] > folders[names[j]]
 	})
+	top := folders[names[0]]
 
-	for _, name := range names {
-		fmt.Println(name, ByteCountSI(folders[name]))
+	spacing := 30
+	if *visualizationPtr {
+		for _, name := range names {
+			if folders[name] == 0 {
+				fmt.Println(strings.Repeat(" ", spacing + 2), name, ByteCountSI(folders[name]))
+			} else {
+				repeat := (spacing * int(folders[name])/int(top)) + 1
+				fmt.Println(strings.Repeat("#", repeat), strings.Repeat(" ", spacing + 1 - repeat), name, ByteCountSI(folders[name]))
+			}
+		}
+	} else {
+		for _, name := range names {
+			fmt.Println(name, ByteCountSI(folders[name]))
+		}
 	}
 }
