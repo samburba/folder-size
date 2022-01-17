@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"sort"
 )
 
 func ByteCountSI(b int64) string {
@@ -45,12 +46,28 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	
+	folders := make(map[string]int64)
+	
 	for _, f := range files {
 		if f.IsDir() {
 			size := GetFolderSize(*directoryPtr + "/" + f.Name(), 0)
-			fmt.Println(f.Name(), ByteCountSI(size))
+			folders[f.Name()] = size
 		} else {
-			fmt.Println(f.Name(), ByteCountSI(f.Size()))
+			folders[f.Name()] = f.Size()
 		}
+	}
+
+	names := make([]string, 0, len(folders))
+	for k := range folders {
+		names = append(names, k)
+	}
+
+	sort.Slice(names, func(i, j int) bool { 
+		return folders[names[i]] > folders[names[j]]
+	})
+
+	for _, name := range names {
+		fmt.Println(name, ByteCountSI(folders[name]))
 	}
 }
